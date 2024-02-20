@@ -1,0 +1,79 @@
+h1 {
+    font-size: 2.6rem;
+    text-align: center;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 1.6rem;
+    text-align: center;
+}
+
+.inputContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: .1rem;
+}
+.form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.titleInputContainer,
+.urlInputContainer,
+.colorInputContainer { 
+    display: flex;
+    flex-direction: column;
+    margin-bottom: .1rem;
+}
+
+.inputTitle {
+    font-size: 1.8rem;
+    margin-bottom: 0.1rem;
+}
+
+.input {
+    width: 20rem;
+    height: 3rem;
+    padding: 0.5rem;
+    font-size: 1.6rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.submitButton {
+    width: 20rem;
+    height: 3rem;
+    margin-top: .1rem;
+    margin-bottom: 1rem;
+    font-size: 1.6rem;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.submitButton:hover {
+    background-color: #0056b3;
+}
+
+.bookmarksContainer {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.bookmarks {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* Add more styles as needed */

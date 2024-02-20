@@ -2,42 +2,57 @@ require('dotenv').config()
 const Bookmark = require('../../models/bookmark')
 const User = require('../../models/user')
 
-
-// delete bookmark
-// create bookmark
-// update bookmark
-
-const destroyBookmark = async (req, res, next) => {
+/****** C - Create *******/
+async function create(req, res, next){
     try {
-        const deletedBookmark = await Bookmark.findByIdAndDelete(req.params.id)
-        res.locals.data.bookmark = deletedBookmark
+        const bookmark = await Bookmark.create(req.body)
+
+        res.locals.data.bookmark = bookmark
         next()
     } catch (error) {
         res.status(400).json({ msg: error.message })
     }
 }
 
-const updateBookmark = async (req, res, next) => {
+/****** R - Read *****/
+async function index(_ ,res,next) {
     try {
-        const updatedBookmark = await Bookmark.findByIdAndUpdate(req.params.id, req.body, { new: true })
-        res.locals.data.bookmark = updatedBookmark
+        const bookmarks = await Bookmark.find({})
+        res.locals.data.bookmarks = bookmarks
         next()
     } catch (error) {
         res.status(400).json({ msg: error.message })
     }
 }
 
-const createBookmark = async (req, res, next) => {
+
+/****** U - Update *****/
+async function update(req ,res,next) {
     try {
-        const createdBookmark = await Bookmark.create(req.body)
-        const user = await User.findOne({ email: res.locals.data.email })
-        user.bookmarks.addToSet(createdBookmark)
-        await user.save()
-        res.locals.data.bookmark = createdBookmark
+        const bookmark = await Bookmark.findByIdAndUpdate(req.params.id, req.body, { new: true })
+        res.locals.data.bookmark = bookmark
         next()
     } catch (error) {
         res.status(400).json({ msg: error.message })
     }
+}
+
+/***** D - destroy/delete *****/
+async function destroy(req ,res,next) {
+    try {
+        const bookmark = await Bookmark.findByIdAndDelete(req.params.id)
+        res.locals.data.bookmark = bookmark
+        next()
+    } catch (error) {
+        res.status(400).json({ msg: error.message })
+    }
+}
+
+// jsonBookmarks jsonBookmark
+// viewControllers
+
+function respondWithBookmarks (_, res) {
+    res.json(res.locals.data.bookmarks)
 }
 
 const respondWithBookmark = (req, res) => {
@@ -45,8 +60,10 @@ const respondWithBookmark = (req, res) => {
 }
 
 module.exports = {
-    destroyBookmark,
-    updateBookmark,
-    createBookmark,
+    create,
+    index,
+    update,
+    destroy,
+    respondWithBookmarks,
     respondWithBookmark
 }

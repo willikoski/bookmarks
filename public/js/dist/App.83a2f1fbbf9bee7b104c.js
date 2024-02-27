@@ -211,13 +211,15 @@ function App() {
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_dom_client__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dom/client */ "./node_modules/react-dom/client.js");
+/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/dist/index.js");
 /* harmony import */ var _App__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./App */ "./src/App.js");
 /* provided dependency */ var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 
 
 
+
 const root = (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(document.getElementById("app"));
-root.render( /*#__PURE__*/React.createElement(react__WEBPACK_IMPORTED_MODULE_0__.StrictMode, null, /*#__PURE__*/React.createElement(_App__WEBPACK_IMPORTED_MODULE_2__["default"], null)));
+root.render( /*#__PURE__*/React.createElement(react__WEBPACK_IMPORTED_MODULE_0__.StrictMode, null, /*#__PURE__*/React.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_3__.BrowserRouter, null, /*#__PURE__*/React.createElement(_App__WEBPACK_IMPORTED_MODULE_2__["default"], null))));
 
 /***/ }),
 
@@ -251,18 +253,20 @@ function BookmarkList(_ref) {
     deleteBookmark,
     updateBookmark
   } = _ref;
-  const [color, setColor] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('#f0f0f0'); // Default color for new bookmarks
+  const [newColor, setNewColor] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)('#000000'); // Default color for new bookmarks
 
   const handleColorChange = e => {
     const selectedColor = e.target.value;
-    setColor(selectedColor);
+    setNewColor(selectedColor); // Update the default color to the selected color
+    setNewBookmark(prevState => _objectSpread(_objectSpread({}, prevState), {}, {
+      color: selectedColor // Set the color of new bookmarks to the selected color
+    }));
   };
   const handleCreateBookmark = () => {
     if (newBookmark.title && newBookmark.url && newBookmark.url !== 'http://' && newBookmark.url !== 'https://') {
       const bookmarkData = _objectSpread(_objectSpread({}, newBookmark), {}, {
-        color
-      });
-      console.log(bookmarkData); // Add this line to check the bookmark data being passed
+        color: newColor
+      }); // Include the currently selected color
       createBookmark(bookmarkData);
       setNewBookmark({
         title: '',
@@ -282,6 +286,11 @@ function BookmarkList(_ref) {
   const handleSubmit = e => {
     e.preventDefault();
     handleCreateBookmark();
+  };
+  const handleColorChangeForBookmark = (id, color) => {
+    updateBookmark(id, {
+      color
+    });
   };
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement((react__WEBPACK_IMPORTED_MODULE_0___default().Fragment), null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h1", null, "William's Bookmarks"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: _BookmarkList_module_scss__WEBPACK_IMPORTED_MODULE_1__["default"].container
@@ -318,7 +327,7 @@ function BookmarkList(_ref) {
     className: _BookmarkList_module_scss__WEBPACK_IMPORTED_MODULE_1__["default"].inputTitle
   }, "Color:", ' ', /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("input", {
     type: "color",
-    value: color,
+    value: newColor,
     onChange: handleColorChange
   }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
     type: "submit",
@@ -332,7 +341,9 @@ function BookmarkList(_ref) {
     bookmark: bookmark,
     deleteAction: deleteBookmark,
     updateBookmark: updateBookmark,
-    color: color // Pass color to the Bookmark component
+    color: bookmark.color || newColor // Use the bookmark's color if available, otherwise default to newColor
+    ,
+    handleColorChangeForBookmark: handleColorChangeForBookmark
   }))))));
 }
 
@@ -359,14 +370,10 @@ function Bookmark(_ref) {
     updateBookmark,
     color
   } = _ref;
-  const [title, setTitle] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(bookmark.title);
-  const [url, setUrl] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(bookmark.url);
-  const [bookmarkColor, setBookmarkColor] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(color || '#f0f0f0'); // Default color state
+  const [title, setTitle] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(bookmark.title || '');
+  const [url, setUrl] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(bookmark.url || '');
+  const [bookmarkColor, setBookmarkColor] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(color || '#f0f0f0'); // Initialize with the provided color or default color
 
-  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
-    // Update the color state if the color prop changes
-    setBookmarkColor(color || '#f0f0f0');
-  }, [color]);
   const handleTitleChange = e => {
     setTitle(e.target.value);
   };
@@ -374,7 +381,8 @@ function Bookmark(_ref) {
     setUrl(e.target.value);
   };
   const handleColorChange = e => {
-    setBookmarkColor(e.target.value);
+    const selectedColor = e.target.value || '#000000'; // Ensure the selected color is always defined
+    setBookmarkColor(selectedColor);
   };
   const handleSubmit = () => {
     updateBookmark(bookmark._id, {
@@ -411,13 +419,13 @@ function Bookmark(_ref) {
     className: _Bookmark_module_scss__WEBPACK_IMPORTED_MODULE_1__["default"].inputTitle
   }, "Color:", ' ', /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("input", {
     type: "color",
-    value: color,
+    value: bookmarkColor,
     onChange: handleColorChange
   })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
     type: "button",
     className: _Bookmark_module_scss__WEBPACK_IMPORTED_MODULE_1__["default"].submitButton,
     onClick: handleSubmit
-  }, "Submit")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
+  }, "Update")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
     className: _Bookmark_module_scss__WEBPACK_IMPORTED_MODULE_1__["default"].button,
     onClick: () => deleteAction(bookmark._id)
   }, "Delete"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
@@ -570,20 +578,18 @@ ___CSS_LOADER_EXPORT___.push([module.id, `h1 {
   background-color: #0056b3;
 }
 
-.JXDE6vBHjoLHbNJACRC9 {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-}
-
 .zzGhBoS7i10WluoqF9YU {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1rem;
-  justify-content: center;
+  display: flex;
+  flex-wrap: wrap; /* Allow bookmarks to wrap into multiple rows */
+  justify-content: flex-start; /* Align bookmarks to the left */
+  gap: 20px; /* Add gap between bookmarks */
 }
 
-/* Add more styles as needed */`, "",{"version":3,"sources":["webpack://./src/pages/BookmarkList/BookmarkList.module.scss"],"names":[],"mappings":"AAAA;EACI,iBAAA;EACA,kBAAA;AACJ;;AAEA;EACI,aAAA;EACA,sBAAA;EACA,mBAAA;EACA,iBAAA;EACA,kBAAA;AACJ;;AAEA;EACI,aAAA;EACA,sBAAA;EACA,mBAAA;EACA,qBAAA;AACJ;;AACA;EACI,aAAA;EACA,sBAAA;EACA,mBAAA;AAEJ;;AACA;;;EAGI,aAAA;EACA,sBAAA;EACA,qBAAA;AAEJ;;AACA;EACI,iBAAA;EACA,qBAAA;AAEJ;;AACA;EACI,YAAA;EACA,YAAA;EACA,eAAA;EACA,iBAAA;EACA,sBAAA;EACA,kBAAA;AAEJ;;AACA;EACI,YAAA;EACA,YAAA;EACA,kBAAA;EACA,mBAAA;EACA,iBAAA;EACA,WAAA;EACA,yBAAA;EACA,YAAA;EACA,kBAAA;EACA,eAAA;EACA,sCAAA;AAEJ;;AACA;EACI,yBAAA;AAEJ;;AACA;EACI,aAAA;EACA,uBAAA;EACA,WAAA;AAEJ;;AACA;EACI,aAAA;EACA,4DAAA;EACA,SAAA;EACA,uBAAA;AAEJ;;AACA,8BAAA","sourcesContent":["h1 {\n    font-size: 2.6rem;\n    text-align: center;\n}\n\n.container {\n    display: flex;\n    flex-direction: column;\n    align-items: center;\n    font-size: 1.6rem;\n    text-align: center;\n}\n\n.inputContainer {\n    display: flex;\n    flex-direction: column;\n    align-items: center;\n    margin-bottom: .1rem;\n}\n.form {\n    display: flex;\n    flex-direction: column;\n    align-items: center;\n}\n\n.titleInputContainer,\n.urlInputContainer,\n.colorInputContainer { \n    display: flex;\n    flex-direction: column;\n    margin-bottom: .1rem;\n}\n\n.inputTitle {\n    font-size: 1.8rem;\n    margin-bottom: 0.1rem;\n}\n\n.input {\n    width: 20rem;\n    height: 3rem;\n    padding: 0.5rem;\n    font-size: 1.6rem;\n    border: 1px solid #ccc;\n    border-radius: 5px;\n}\n\n.submitButton {\n    width: 20rem;\n    height: 3rem;\n    margin-top: .1rem;\n    margin-bottom: 1rem;\n    font-size: 1.6rem;\n    color: #fff;\n    background-color: #007bff;\n    border: none;\n    border-radius: 5px;\n    cursor: pointer;\n    transition: background-color 0.3s ease;\n}\n\n.submitButton:hover {\n    background-color: #0056b3;\n}\n\n.bookmarksContainer {\n    display: flex;\n    justify-content: center;\n    width: 100%;\n}\n\n.bookmarks {\n    display: grid;\n    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));\n    gap: 1rem;\n    justify-content: center;\n}\n\n/* Add more styles as needed */\n"],"sourceRoot":""}]);
+.JdYmsaK6Va4jI_Bb0rwl {
+  width: 250px; /* Set a fixed width for each bookmark */
+  margin-bottom: 20px; /* Add space between rows */
+  max-width: 1000px;
+}`, "",{"version":3,"sources":["webpack://./src/pages/BookmarkList/BookmarkList.module.scss"],"names":[],"mappings":"AAAA;EACI,iBAAA;EACA,kBAAA;AACJ;;AAEA;EACI,aAAA;EACA,sBAAA;EACA,mBAAA;EACA,iBAAA;EACA,kBAAA;AACJ;;AAEA;EACI,aAAA;EACA,sBAAA;EACA,mBAAA;EACA,qBAAA;AACJ;;AACA;EACI,aAAA;EACA,sBAAA;EACA,mBAAA;AAEJ;;AACA;;;EAGI,aAAA;EACA,sBAAA;EACA,qBAAA;AAEJ;;AACA;EACI,iBAAA;EACA,qBAAA;AAEJ;;AACA;EACI,YAAA;EACA,YAAA;EACA,eAAA;EACA,iBAAA;EACA,sBAAA;EACA,kBAAA;AAEJ;;AACA;EACI,YAAA;EACA,YAAA;EACA,kBAAA;EACA,mBAAA;EACA,iBAAA;EACA,WAAA;EACA,yBAAA;EACA,YAAA;EACA,kBAAA;EACA,eAAA;EACA,sCAAA;AAEJ;;AACA;EACI,yBAAA;AAEJ;;AACA;EACI,aAAA;EACA,eAAA,EAAA,+CAAA;EACA,2BAAA,EAAA,gCAAA;EACA,SAAA,EAAA,8BAAA;AAEJ;;AACE;EACE,YAAA,EAAA,wCAAA;EACA,mBAAA,EAAA,2BAAA;EACA,iBAAA;AAEJ","sourcesContent":["h1 {\n    font-size: 2.6rem;\n    text-align: center;\n}\n\n.container {\n    display: flex;\n    flex-direction: column;\n    align-items: center;\n    font-size: 1.6rem;\n    text-align: center;\n}\n\n.inputContainer {\n    display: flex;\n    flex-direction: column;\n    align-items: center;\n    margin-bottom: .1rem;\n}\n.form {\n    display: flex;\n    flex-direction: column;\n    align-items: center;\n}\n\n.titleInputContainer,\n.urlInputContainer,\n.colorInputContainer { \n    display: flex;\n    flex-direction: column;\n    margin-bottom: .1rem;\n}\n\n.inputTitle {\n    font-size: 1.8rem;\n    margin-bottom: 0.1rem;\n}\n\n.input {\n    width: 20rem;\n    height: 3rem;\n    padding: 0.5rem;\n    font-size: 1.6rem;\n    border: 1px solid #ccc;\n    border-radius: 5px;\n}\n\n.submitButton {\n    width: 20rem;\n    height: 3rem;\n    margin-top: .1rem;\n    margin-bottom: 1rem;\n    font-size: 1.6rem;\n    color: #fff;\n    background-color: #007bff;\n    border: none;\n    border-radius: 5px;\n    cursor: pointer;\n    transition: background-color 0.3s ease;\n}\n\n.submitButton:hover {\n    background-color: #0056b3;\n}\n\n.bookmarks {\n    display: flex;\n    flex-wrap: wrap; /* Allow bookmarks to wrap into multiple rows */\n    justify-content: flex-start; /* Align bookmarks to the left */\n    gap: 20px; /* Add gap between bookmarks */\n  }\n  \n  .bookmarkContainer {\n    width: 250px; /* Set a fixed width for each bookmark */\n    margin-bottom: 20px; /* Add space between rows */\n    max-width: 1000px;\n  }"],"sourceRoot":""}]);
 // Exports
 ___CSS_LOADER_EXPORT___.locals = {
 	"container": `EfM3FnXytL0pZ6vbOYfF`,
@@ -595,8 +601,8 @@ ___CSS_LOADER_EXPORT___.locals = {
 	"inputTitle": `FdPloNH0SCfsG2Q1YmNB`,
 	"input": `uSUeHgF0rT9whNCeoJVE`,
 	"submitButton": `bJFxMgCiMINrThG6PD7X`,
-	"bookmarksContainer": `JXDE6vBHjoLHbNJACRC9`,
-	"bookmarks": `zzGhBoS7i10WluoqF9YU`
+	"bookmarks": `zzGhBoS7i10WluoqF9YU`,
+	"bookmarkContainer": `JdYmsaK6Va4jI_Bb0rwl`
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -948,6 +954,36 @@ var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js
 /******/ 		};
 /******/ 	})();
 /******/ 	
+/******/ 	/* webpack/runtime/create fake namespace object */
+/******/ 	(() => {
+/******/ 		var getProto = Object.getPrototypeOf ? (obj) => (Object.getPrototypeOf(obj)) : (obj) => (obj.__proto__);
+/******/ 		var leafPrototypes;
+/******/ 		// create a fake namespace object
+/******/ 		// mode & 1: value is a module id, require it
+/******/ 		// mode & 2: merge all properties of value into the ns
+/******/ 		// mode & 4: return value when already ns object
+/******/ 		// mode & 16: return value when it's Promise-like
+/******/ 		// mode & 8|1: behave like require
+/******/ 		__webpack_require__.t = function(value, mode) {
+/******/ 			if(mode & 1) value = this(value);
+/******/ 			if(mode & 8) return value;
+/******/ 			if(typeof value === 'object' && value) {
+/******/ 				if((mode & 4) && value.__esModule) return value;
+/******/ 				if((mode & 16) && typeof value.then === 'function') return value;
+/******/ 			}
+/******/ 			var ns = Object.create(null);
+/******/ 			__webpack_require__.r(ns);
+/******/ 			var def = {};
+/******/ 			leafPrototypes = leafPrototypes || [null, getProto({}), getProto([]), getProto(getProto)];
+/******/ 			for(var current = mode & 2 && value; typeof current == 'object' && !~leafPrototypes.indexOf(current); current = getProto(current)) {
+/******/ 				Object.getOwnPropertyNames(current).forEach((key) => (def[key] = () => (value[key])));
+/******/ 			}
+/******/ 			def['default'] = () => (value);
+/******/ 			__webpack_require__.d(ns, def);
+/******/ 			return ns;
+/******/ 		};
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
 /******/ 		// define getter functions for harmony exports
@@ -963,6 +999,17 @@ var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js
 /******/ 	/* webpack/runtime/hasOwnProperty shorthand */
 /******/ 	(() => {
 /******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/node module decorator */
@@ -1037,9 +1084,9 @@ var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module depends on other loaded chunks and execution need to be delayed
-/******/ 	var __webpack_exports__ = __webpack_require__.O(undefined, ["vendors-node_modules_css-loader_dist_runtime_api_js-node_modules_css-loader_dist_runtime_sour-b53f7e"], () => (__webpack_require__("./src/index.js")))
+/******/ 	var __webpack_exports__ = __webpack_require__.O(undefined, ["vendors-node_modules_css-loader_dist_runtime_api_js-node_modules_css-loader_dist_runtime_sour-354ecd"], () => (__webpack_require__("./src/index.js")))
 /******/ 	__webpack_exports__ = __webpack_require__.O(__webpack_exports__);
 /******/ 	
 /******/ })()
 ;
-//# sourceMappingURL=App.fcfa286a7648732fe9b32bc78cb77c1d.js.map
+//# sourceMappingURL=App.2ee4913f630130098384ba73ef5809ab.js.map

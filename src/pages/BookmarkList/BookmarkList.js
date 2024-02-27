@@ -10,16 +10,20 @@ export default function BookmarkList({
     deleteBookmark,
     updateBookmark
 }) {
-    const [color, setColor] = useState('#f0f0f0'); // Default color for new bookmarks
+    const [newColor, setNewColor] = useState('#000000'); // Default color for new bookmarks
 
     const handleColorChange = (e) => {
         const selectedColor = e.target.value;
-        setColor(selectedColor);
+        setNewColor(selectedColor); // Update the default color to the selected color
+        setNewBookmark(prevState => ({
+            ...prevState,
+            color: selectedColor // Set the color of new bookmarks to the selected color
+        }));
     };
+
     const handleCreateBookmark = () => {
         if (newBookmark.title && newBookmark.url && newBookmark.url !== 'http://' && newBookmark.url !== 'https://') {
-            const bookmarkData = { ...newBookmark, color };
-            console.log(bookmarkData); // Add this line to check the bookmark data being passed
+            const bookmarkData = { ...newBookmark, color: newColor }; // Include the currently selected color
             createBookmark(bookmarkData);
             setNewBookmark({ title: '', url: '' });
         }
@@ -33,6 +37,10 @@ export default function BookmarkList({
     const handleSubmit = (e) => {
         e.preventDefault();
         handleCreateBookmark();
+    };
+
+    const handleColorChangeForBookmark = (id, color) => {
+        updateBookmark(id, { color });
     };
 
     return (
@@ -64,11 +72,12 @@ export default function BookmarkList({
                         </div>
                         <div className={styles.colorInputContainer}>
                             <h3 className={styles.inputTitle}>Color:{' '}
-                            <input
-                                type="color"
-                                value={color}
-                                onChange={handleColorChange}
-                            /></h3>
+                                <input
+                                    type="color"
+                                    value={newColor}
+                                    onChange={handleColorChange}
+                                />
+                            </h3>
                         </div>
                         <button type="submit" className={styles.submitButton}>Create Bookmark</button>
                     </form>
@@ -81,7 +90,8 @@ export default function BookmarkList({
                                 bookmark={bookmark}
                                 deleteAction={deleteBookmark}
                                 updateBookmark={updateBookmark}
-                                color={color} // Pass color to the Bookmark component
+                                color={bookmark.color || newColor} // Use the bookmark's color if available, otherwise default to newColor
+                                handleColorChangeForBookmark={handleColorChangeForBookmark}
                             />
                         ))}
                     </div>

@@ -63,17 +63,15 @@ h1 {
     background-color: #0056b3;
 }
 
-.bookmarksContainer {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-}
-
 .bookmarks {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1rem;
-    justify-content: center;
-}
-
-/* Add more styles as needed */
+    display: flex;
+    flex-wrap: wrap; /* Allow bookmarks to wrap into multiple rows */
+    justify-content: flex-start; /* Align bookmarks to the left */
+    gap: 20px; /* Add gap between bookmarks */
+  }
+  
+  .bookmarkContainer {
+    width: 250px; /* Set a fixed width for each bookmark */
+    margin-bottom: 20px; /* Add space between rows */
+    max-width: 1000px;
+  }

@@ -1,15 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import styles from './Bookmark.module.scss';
 
 export default function Bookmark({ bookmark, deleteAction, updateBookmark, color }) {
-    const [title, setTitle] = useState(bookmark.title);
-    const [url, setUrl] = useState(bookmark.url);
-    const [bookmarkColor, setBookmarkColor] = useState(color || '#f0f0f0'); // Default color state
-
-    useEffect(() => {
-        // Update the color state if the color prop changes
-        setBookmarkColor(color || '#f0f0f0');
-    }, [color]);
+    const [title, setTitle] = useState(bookmark.title || '');
+    const [url, setUrl] = useState(bookmark.url || '');
+    const [bookmarkColor, setBookmarkColor] = useState(color || '#f0f0f0'); // Initialize with the provided color or default color
 
     const handleTitleChange = (e) => {
         setTitle(e.target.value);
@@ -20,7 +15,8 @@ export default function Bookmark({ bookmark, deleteAction, updateBookmark, color
     };
 
     const handleColorChange = (e) => {
-        setBookmarkColor(e.target.value);
+        const selectedColor = e.target.value || '#000000'; // Ensure the selected color is always defined
+        setBookmarkColor(selectedColor);
     };
 
     const handleSubmit = () => {
@@ -53,7 +49,7 @@ export default function Bookmark({ bookmark, deleteAction, updateBookmark, color
                 <h4 className={styles.inputTitle}>Color:{' '}
                     <input
                         type="color"
-                        value={color}
+                        value={bookmarkColor}
                         onChange={handleColorChange}
                     />
                 </h4>
@@ -62,7 +58,7 @@ export default function Bookmark({ bookmark, deleteAction, updateBookmark, color
                     className={styles.submitButton}
                     onClick={handleSubmit}
                 >
-                    Submit
+                    Update
                 </button>
             </form>
             <div>

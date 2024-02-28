@@ -154,7 +154,7 @@ export default function App(){
             const foundCompletedBookmarks = await responseTwo.json()
             setCompletedBookmarks(foundCompletedBookmarks.reverse())
         } catch(error){
-            console.error(error)
+            // console.error(error)
         }
     }
     useEffect(() => {

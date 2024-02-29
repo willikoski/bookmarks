@@ -6,6 +6,7 @@ const bookmarkSchema = new Schema({
     category: { type: String, required: true, default: 'All' }, // Add category field
     isImportant: { type: Boolean, default: false },
     isVisible: { type: Boolean, default: false },
+    notes: { type: String, default: 'Description' },
     color: { type: String } 
 }, {
     timestamps: true

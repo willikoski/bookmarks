@@ -8,7 +8,8 @@
 }
 
 .bookmark {
-    width: 90%;
+    width: 95%;
+    width: 282px;
     max-width: 400px;
     padding: 1rem;
     background-color: #ffffff;
@@ -37,8 +38,9 @@ h4 {
 
 .submitButton {
     width: 100%;
+    height: 2rem;
     margin-top: .1rem;
-    font-size: .9rem;
+    font-size: 1rem;
     color: #fff;
     background-color: #007bff;
     border: none;
@@ -95,10 +97,53 @@ h4 {
     transition: color 0.3s ease;
 
     &.importantActive {
-        color: gold; /* Change color when active */
+        color: gold; 
     }
 
     &:hover {
-        color: gold; /* Change color on hover */
+        color: gold;
+    }
+}
+
+.notesInput {
+    font-size: 1rem;
+}
+
+.editIcon {
+    font-size: 16px;
+    cursor: pointer;
+}
+  
+.notes {
+    padding: 10px; 
+}
+  
+p {
+    font-size: 1rem;
+    margin: 0;
+}
+
+.inputTitle {
+    input {
+        cursor: pointer;
+    }
+}
+
+.bookmarkCategory {
+    input {
+        text-align: center;
+        width: 50%;
+        padding: 0.5rem; 
+        border: 1px solid #ccc; 
+        border-radius: 5px; 
+    }
+}
+
+.notes {
+    input {
+        width: 50%;
+        padding: 0.5rem; 
+        border: 1px solid #ccc; 
+        border-radius: 5px; 
     }
 }

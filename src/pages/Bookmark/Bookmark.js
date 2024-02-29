@@ -6,7 +6,9 @@ export default function Bookmark({ bookmark, deleteAction, updateBookmark, color
     const [url, setUrl] = useState(bookmark.url || '');
     const [category, setCategory] = useState(bookmark.category || '');
     const [bookmarkColor, setBookmarkColor] = useState(color || '#f0f0f0');
-    const [isImportant, setIsImportant] = useState(bookmark.isImportant || false); // set to or false state
+    const [isImportant, setIsImportant] = useState(bookmark.isImportant || false);
+    const [notes, setNotes] = useState(bookmark.notes || '');
+    const [isEditingNotes, setIsEditingNotes] = useState(false); 
 
     const handleTitleChange = (e) => {
         const titleValue = e.target.value;
@@ -17,6 +19,7 @@ export default function Bookmark({ bookmark, deleteAction, updateBookmark, color
     const handleUrlChange = (e) => {
         setUrl(e.target.value);
     };
+
     const handleCategoryChange = (e) => {
         const categoryValue = e.target.value;
         const capitalizedCategory = categoryValue.charAt(0).toUpperCase() + categoryValue.slice(1);
@@ -29,13 +32,24 @@ export default function Bookmark({ bookmark, deleteAction, updateBookmark, color
     };
 
     const handleIsImportantToggle = () => {
-        const updatedData = { ...bookmark, isImportant: !isImportant }; // toggle the important state
-        setIsImportant(!isImportant); 
-        updateBookmark(bookmark._id, updatedData); 
+        const updatedData = { ...bookmark, isImportant: !isImportant };
+        setIsImportant(!isImportant);
+        updateBookmark(bookmark._id, updatedData);
     };
 
-    const handleSubmit = () => {
-        updateBookmark(bookmark._id, { title, url, category, color: bookmarkColor, isImportant });
+    const handleNotesChange = (e) => {
+        const newNotes = e.target.value;
+        console.log('New Notes:', newNotes);
+        setNotes(newNotes);
+    };
+
+    const handleSubmit = async () => {
+        try {
+            await updateBookmark(bookmark._id, { title, url, category, color: bookmarkColor, isImportant, notes });
+            setIsEditingNotes(false); 
+        } catch (error) {
+            console.error(error);
+        }
     };
 
     const handleClick = (e) => {
@@ -47,7 +61,6 @@ export default function Bookmark({ bookmark, deleteAction, updateBookmark, color
     return (
         <div className={`${styles.bookmarkContainer} ${styles.customColor}`} style={{ backgroundColor: bookmarkColor }}>
             <form className={styles.bookmark}>
-                {/* Checkable button to mark as important */}
                 <div className={styles.importantButtonContainer}>
                     <button
                         type="button"
@@ -79,6 +92,23 @@ export default function Bookmark({ bookmark, deleteAction, updateBookmark, color
                         value={category}
                         onChange={handleCategoryChange}
                     />
+                </div>
+                <div className={styles.notes}>
+                    <h4 onClick={() => setIsEditingNotes(true)}>
+                        Description
+                        <span role="img" aria-label="Pencil" className={styles.editIcon}>✏️</span> 
+                    </h4>
+                    {isEditingNotes ? (
+                        <textarea
+                            name="notes"
+                            className={styles.notesInput}
+                            value={notes}
+                            onChange={handleNotesChange}
+                            onBlur={() => setIsEditingNotes(false)}
+                        />
+                    ) : (
+                        <p>{notes}</p>
+                    )}
                 </div>
                 <h4 className={styles.inputTitle}>Color:{' '}
                     <input

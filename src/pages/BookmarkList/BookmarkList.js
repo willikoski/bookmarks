@@ -36,13 +36,14 @@ export default function BookmarkList({
         if (newBookmark.title && newBookmark.url && newBookmark.url !== 'http://' && newBookmark.url !== 'https://') {
             const bookmarkData = { ...newBookmark, color: newColor };
             createBookmark(bookmarkData);
-            setNewBookmark({ title: '', url: '', category: '' }); // Reset category after creating bookmark
+            setNewBookmark({ title: '', url: '', category: '' }); 
         }
     };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setNewBookmark({ ...newBookmark, [name]: value });
+        const capitalizedValue = value.charAt(0).toUpperCase() + value.slice(1); 
+        setNewBookmark({ ...newBookmark, [name]: capitalizedValue });
     };
 
     const handleSubmit = (e) => {
@@ -76,9 +77,8 @@ export default function BookmarkList({
         updateBookmark(id, { color });
     };
 
-    // Get unique categories from bookmarks
     const categories = [...new Set(bookmarks.map(bookmark => bookmark.category))];
-    const prioritizedBookmarks = bookmarks.map(bookmark => ({ ...bookmark }));
+    const prioritizedBookmarks = [...bookmarks]; 
 
     return (
         <>
@@ -151,7 +151,7 @@ export default function BookmarkList({
                             <div className={styles.bookmarks}>
                             {prioritizedBookmarks
                             .filter(bookmark => bookmark.category === category)
-                            .sort((a, b) => (b.isImportant ? 1 : -1)) // Sort bookmarks within each category based on importance
+                            .sort((a, b) => (b.isImportant ? 1 : -1)) 
                             .map(bookmark => (
                                 <Bookmark
                                     key={bookmark._id}

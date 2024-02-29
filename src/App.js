@@ -1,60 +1,75 @@
 import { useState, useEffect } from 'react'
 import BookmarkList from './pages/BookmarkList/BookmarkList'
-import styles from './App.module.scss'
+import AuthPage from './login/AuthPage/AuthPage';
+import styles from './App.module.scss';
 
+export default function App() {
+    const [loggedIn, setLoggedIn] = useState(false);
+    const [bookmarks, setBookmarks] = useState([]);
+    const [completedBookmarks, setCompletedBookmarks] = useState([]);
+    const [newBookmark, setNewBookmark] = useState({ title: '', url: '' });
+    const [token, setToken] = useState('');
+    const [user, setUser] = useState(null); // Define the user state
 
-export default function App(){
-    const [bookmarks, setBookmarks] = useState([])
-    const [completedBookmarks, setCompletedBookmarks] = useState([])
-    const [newBookmark, setNewBookmark] = useState({
-        title: '',
-        url: ''
-    })
-
-    const [credentials, setCredentials] = useState({
-        email: '',
-        password: '',
-        name: ''
-    })
-    const [token, setToken] = useState('')
-    // Login
-    const login = async () => {
-        try {
-            const response = await fetch('/api/users/login', {
-                method: 'Post',
-                header: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email: credentials.email, password: credentials.password})
-            })
-            const tokenResponse = await response.json()
-            setToken(tokenResponse)
-            localStorage.setItem('token', JSON.stringify(tokenResponse))
-        } catch (error) {
-            console.error(error)
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            setToken(token);
+            setLoggedIn(true);
         }
-    }
+    }, []);
 
-    // Signup
-    const signup = async () => {
+    const signUp = async (credentials) => {
         try {
             const response = await fetch('/api/users', {
-                method: 'Post',
-                header: {
-                    'Content-Type': 'application/json'
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ ...credentials })
-            })
-            const tokenResponse = await response.json()
-            setToken(tokenResponse)
-            localStorage.setItem('token', JSON.stringify(tokenResponse))
+                body: JSON.stringify(credentials),
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setUser(data.user); // Set user after successful sign-up
+                setToken(data.token); // Set token after successful sign-up
+                setLoggedIn(true);
+                console.log('Sign up successful:', data);
+            } else {
+                const errorMessage = await response.text();
+                console.error('Sign up failed:', errorMessage);
+            }
         } catch (error) {
-            console.error(error)
+            console.error('Error during sign up:', error);
         }
-    }
+    };
 
-    //createBookmarks
-    const createBookmark = async () => {
+    const login = async (credentials) => {
+        try {
+            const response = await fetch('/api/users/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(credentials),
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setUser(data.user);
+                setToken(data.token);
+                setLoggedIn(true);
+                console.log('Login successful:', data);
+                await getBookmarks(data);
+            } else {
+                const errorMessage = await response.text();
+                console.error('Login failed:', errorMessage);
+            }
+        } catch (error) {
+            console.error('Error during login:', error);
+        }
+    };
+    
+     //createBookmarks
+     const createBookmark = async () => {
         try {
             const response = await fetch('/api/bookmarks', {
                 method: 'POST',
@@ -79,29 +94,30 @@ export default function App(){
 
     // UpdateBookmark
     const updateBookmark = async (id, bookmarkToUpdate) => {
-        console.log(id, bookmarkToUpdate)
-        const body = { ...bookmarkToUpdate }
+        console.log(id, bookmarkToUpdate);
+        const body = { ...bookmarkToUpdate };
         try {
             const response = await fetch(`/api/bookmarks/${id}`, {
                 method: 'PUT',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` // Include the authentication token
                 },
                 body: JSON.stringify(body)
-            })
-            const updatedBookmark = await response.json()
+            });
+            const updatedBookmark = await response.json();
             const updatedBookmarks = bookmarks.map(bookmark => {
                 if (bookmark._id === id) {
-                    return updatedBookmark
+                    return updatedBookmark;
                 }
                 return bookmark;
             });
-            setBookmarks(updatedBookmarks)
-            setNewBookmark({ title: '', url: '' })
+            setBookmarks(updatedBookmarks);
+            setNewBookmark({ title: '', url: '' });
         } catch (error) {
-            console.error(error)
+            console.error(error);
         }
-    }
+    };
 
     //deleteBookmarks
     const deleteBookmark = async (id) => {
@@ -125,53 +141,77 @@ export default function App(){
     //moveToCompleted
     const moveToCompleted = async (id) => {
         try {
-            const index = bookmarks.findIndex((bookmark) => bookmark._id === id)
-            const bookmarksCopy = [...bookmarks]
-            const subject = bookmarksCopy[index]
+            const index = bookmarks.findIndex((bookmark) => bookmark._id === id);
+            const bookmarksCopy = [...bookmarks];
+            const subject = bookmarksCopy[index];
+            
+            // Update the bookmark status to completed
             const response = await fetch(`/api/bookmarks/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(subject)
-            })
-            const updatedBookmark = await response.json()
-            const completedBMsCopy = [updatedBookmark, ...completedBookmarks]
-            setCompletedBookmarks(completedBMsCopy)
-            bookmarksCopy.splice(index, 1)
-            setBookmarks(bookmarksCopy)
+                body: JSON.stringify({ ...subject, completed: true }) // Assuming there's a field 'completed' to mark bookmark as completed
+            });
+            
+            if (response.ok) {
+                // Remove the bookmark from active bookmarks
+                bookmarksCopy.splice(index, 1);
+                setBookmarks(bookmarksCopy);
+                
+                // Add the bookmark to completed bookmarks
+                const updatedBookmark = await response.json();
+                setCompletedBookmarks([updatedBookmark, ...completedBookmarks]);
+            } else {
+                console.error('Failed to move bookmark to completed:', response.statusText);
+            }
         } catch (error) {
-            console.error(error)
+            console.error(error);
         }
-    }
+    };
     //getBookmarks
     const getBookmarks = async () => {
-        try{
-            const response = await fetch('/api/bookmarks')
-            const foundBookmarks = await response.json()
-            setBookmarks(foundBookmarks.reverse())
-            const responseTwo = await fetch('/api/bookmarks/completed')
-            const foundCompletedBookmarks = await responseTwo.json()
-            setCompletedBookmarks(foundCompletedBookmarks.reverse())
-        } catch(error){
-            // console.error(error)
+        try {
+            const token = localStorage.getItem('token'); // Retrieve token from storage
+            const response = await fetch('/api/bookmarks', { // Adjusted the fetch request to retrieve all bookmarks
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${token}` // Include token in headers
+                }
+            });
+            if (response.ok) {
+                const foundBookmarks = await response.json();
+                setBookmarks(foundBookmarks.reverse());
+            } else {
+                console.error('Failed to fetch bookmarks:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error fetching bookmarks:', error);
         }
-    }
+    };
+
     useEffect(() => {
-        getBookmarks()
-    }, [])
+        if (loggedIn && token) {
+            getBookmarks();
+        }
+    }, [loggedIn, token]);
+
     return (
         <div className={styles.App}>
-            <BookmarkList
-                newBookmark={newBookmark}
-                setNewBookmark={setNewBookmark}
-                createBookmark={createBookmark}
-                bookmarks={bookmarks}
-                updateBookmark={updateBookmark}
-                moveToCompleted={moveToCompleted}
-                completedBookmarks={completedBookmarks}
-                deleteBookmark={deleteBookmark}
-            />
+            {!loggedIn ? (
+                <AuthPage login={login} signUp={signUp} />
+            ) : (
+                <BookmarkList
+                    newBookmark={newBookmark}
+                    setNewBookmark={setNewBookmark}
+                    createBookmark={createBookmark}
+                    bookmarks={bookmarks}
+                    updateBookmark={updateBookmark}
+                    moveToCompleted={moveToCompleted}
+                    completedBookmarks={completedBookmarks}
+                    deleteBookmark={deleteBookmark}
+                />
+            )}
         </div>
-    )
+    );
 }

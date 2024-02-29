@@ -2,45 +2,59 @@ require('dotenv').config()
 const jwt = require('jsonwebtoken')
 const User = require('../../models/user')
 const bcrypt = require('bcrypt')
-const crypto = require('crypto')
+
+// auth 
+
+const auth = async (req, res, next) => {
+    try {
+      const token = req.header('Authorization').replace('Bearer ', '');
+      const data = jwt.verify(token, process.env.SECRET);
+      const user = await User.findOne({ _id: data._id });
+      if (!user) {
+        throw new Error();
+      }
+      req.user = user;
+      next();
+    } catch (error) {
+      res.status(401).send('Not authorized');
+    }
+  };
 
 // signup
-const signUp = async (req, res, next) => {
+const signUp = async (req, res) => {
     try {
-        const user = await User.create(req.body)
-        const token = createJWT(user)
-        res.locals.data.user = user
-        res.locals.data.token = token
-        next()
+      const user = new User(req.body);
+      const token = user.generateAuthToken();
+      await user.save();
+      res.status(201).send({ user, token });
     } catch (error) {
-        res.status(400).json({ msg: error.message })
+      res.status(400).send(error);
     }
-}
+  };
+  
 
 // login
 const login = async (req, res, next) => {
     try {
-        const user = await User.findOne({ email: req.body.email })
-        if(!user) throw new Error('user not found, email was invalid')
-        const password = crypto.createHmac('sha256', process.env.SECRET).update(req.body.password).digest('hex').split('').reverse().join('')
-        const match = await bcrypt.compare(password, user.password)
-        if(!match) throw new Error('Password did not match')
-        res.locals.data.user = user
-        res.locals.data.token = createJWT(user)
-        next()
-    } catch (error) {
-        res.status(400).json({ msg: error.message })
+        const user = await User.findOne({ email: req.body.email });
+        if (!user || !await bcrypt.compare(req.body.password, user.password)) {
+            res.status(400).send('Invalid login credentials');
+        } else {
+            // Send user data and bookmarks to the client
+            res.json({ user, bookmarks: user.bookmarks });
+        }
+    } catch(error) {
+        res.status(400).json({ message: error.message });
     }
-}
+};
 
 const getBookmarksByUser = async (req, res, next) => {
     try {
-        const user = await User.findOne({ email: res.locals.data.email }).populate('bookmarks').sort('bookmarks.createdAt').exec()
-        const bookmarks = user.bookmarks
-        res.locals.data.bookmarks = bookmarks
-        next()
+        const userId = req.params.userId; // Get the user ID from the request parameters
+        const userBookmarks = await Bookmark.find({ userId: userId }); // Filter bookmarks by user ID
+        res.json(userBookmarks);
     } catch (error) {
-        res.status(400).json({ msg: error.message })
+        res.status(400).json({ msg: error.message });
     }
 }
 
@@ -57,6 +71,7 @@ const respondWithBookmarks = (req, res) => {
 }
 
 module.exports = {
+    auth,
     signUp,
     login,
     getBookmarksByUser,

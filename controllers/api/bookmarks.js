@@ -12,7 +12,6 @@ async function create(req, res, next){
         res.status(400).json({ msg: error.message });
     }
 }
-
 /****** R - Read *****/
 async function index(_, res, next) {
     try {
